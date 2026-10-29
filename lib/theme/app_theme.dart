@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../utils/constants.dart';
 
 OutlineInputBorder _border(Color c, [double w = 1]) => OutlineInputBorder(
@@ -16,15 +15,15 @@ ThemeData buildAppTheme() {
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme)
+    textTheme: base.textTheme
         .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink),
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.background,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: true,
       foregroundColor: AppColors.ink,
-      titleTextStyle: GoogleFonts.plusJakartaSans(
+      titleTextStyle: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w700,
         color: AppColors.ink,
