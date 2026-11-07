@@ -52,9 +52,9 @@ class IncidentDetailScreen extends StatelessWidget {
       await provider.delete(incidentId);
       navigator.pop();
       messenger.showSnackBar(const SnackBar(content: Text('Report withdrawn')));
-    } catch (_) {
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Could not withdraw the report.')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(errorMessage(e, 'Could not withdraw the report.'))));
     }
   }
 
@@ -69,9 +69,10 @@ class IncidentDetailScreen extends StatelessWidget {
           by: staff, note: result.note);
       messenger.showSnackBar(SnackBar(
           content: Text('Status updated to ${result.status.label}')));
-    } catch (_) {
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Could not update the status. Try again.')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(
+              errorMessage(e, 'Could not update the status. Try again.'))));
     }
   }
 
@@ -86,9 +87,10 @@ class IncidentDetailScreen extends StatelessWidget {
           content: Text(wasConfirmed
               ? 'Removed your confirmation'
               : 'Thanks! Staff can see more students are affected.')));
-    } catch (_) {
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Something went wrong. Try again.')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          content:
+              Text(errorMessage(e, 'Something went wrong. Try again.'))));
     }
   }
 

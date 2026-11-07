@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../data/repositories.dart';
 
 String timeAgo(DateTime t) {
   final d = DateTime.now().difference(t);
@@ -19,3 +20,9 @@ String initials(String name) {
   if (parts.length == 1) return parts.first[0].toUpperCase();
   return (parts.first[0] + parts.last[0]).toUpperCase();
 }
+
+/// User-facing message for an error thrown by a provider/repository.
+/// Only [AppException] messages are shown; anything else is unexpected and
+/// gets the generic [fallback] instead of leaking internals.
+String errorMessage(Object error, String fallback) =>
+    error is AppException ? error.message : fallback;

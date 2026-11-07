@@ -85,7 +85,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: AppColors.muted, size: 20),
                 ),
                 items: departments
-                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                    .map((d) => DropdownMenuItem(
+                    value: d,
+                    child: Text(d, overflow: TextOverflow.ellipsis)))
                     .toList(),
                 onChanged: (v) => setState(() => _department = v),
                 validator: (v) => v == null ? 'Select your department' : null,

@@ -27,4 +27,11 @@ class Validators {
     if (v.trim().length < min) return '$field needs at least $min characters';
     return null;
   }
+
+  static String? lengthBetween(String? v, int min, int max, String field) {
+    final base = minLength(v, min, field);
+    if (base != null) return base;
+    if (v!.trim().length > max) return '$field must be $max characters or fewer';
+    return null;
+  }
 }

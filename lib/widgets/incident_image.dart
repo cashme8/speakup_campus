@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/incident.dart';
 
@@ -8,6 +7,7 @@ class IncidentImage extends StatelessWidget {
   final double? width;
   final double height;
   final double radius;
+  final BoxFit fit;
 
   const IncidentImage(
     this.incident, {
@@ -15,6 +15,7 @@ class IncidentImage extends StatelessWidget {
     this.width,
     required this.height,
     this.radius = 12,
+    this.fit = BoxFit.cover,
   });
 
   @override
@@ -28,21 +29,26 @@ class IncidentImage extends StatelessWidget {
     );
 
     Widget child = placeholder;
-    if (incident.localImagePath != null) {
-      child = Image.file(
-        File(incident.localImagePath!),
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => placeholder,
-      );
-    } else if (incident.imageUrl != null) {
+    if (incident.imageUrl != null) {
       child = Image.network(
         incident.imageUrl!,
         width: width,
         height: height,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => placeholder,
+        fit: fit,
+        loadingBuilder: (_, img, progress) => progress == null
+            ? img
+            : Container(
+                width: width,
+                height: height,
+                color: cat.color.withValues(alpha: 0.08),
+                alignment: Alignment.center,
+                child: const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+        errorBuilder: (_, _, _) => placeholder,
       );
     }
     return ClipRRect(borderRadius: BorderRadius.circular(radius), child: child);

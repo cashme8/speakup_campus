@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../data/repositories.dart';
 import '../models/incident.dart';
 import '../providers/auth_provider.dart';
 import '../providers/incident_provider.dart';
@@ -183,14 +184,14 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
             location: _location!,
             locationDetail: _locationDetail.text,
             isAnonymous: _anonymous,
-            localImagePath: _photo?.path,
+            photo: _photo == null ? null : File(_photo!.path),
           );
       navigator.pop();
       messenger.showSnackBar(const SnackBar(
           content: Text('Report submitted. We will keep you updated.')));
     } catch (e) {
       messenger.showSnackBar(SnackBar(
-          content: Text(e is StateError
+          content: Text(e is AppException
               ? e.message
               : 'Could not submit your report. '
                   'Check your connection and try again.')));
@@ -298,7 +299,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                       ),
                       items: campusLocations
                           .map((l) =>
-                              DropdownMenuItem(value: l, child: Text(l)))
+                              DropdownMenuItem(
+                              value: l,
+                              child: Text(l,
+                                  overflow: TextOverflow.ellipsis)))
                           .toList(),
                       onChanged: (v) => setState(() => _location = v),
                       validator: (v) =>
