@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "153865816221",
+    "project_id": "speakup-campus",
+    "storage_bucket": "speakup-campus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:153865816221:android:8ae639485f3759b8d8ac74",
+        "android_client_info": {
+          "package_name": "com.example.speakup_campus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrHV8Y25vggm6PG0SM1zAfdoQfr9s3fRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
