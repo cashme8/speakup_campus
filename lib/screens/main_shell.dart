@@ -65,43 +65,53 @@ class _MainShellState extends State<MainShell> {
         notchMargin: 8,
         padding: EdgeInsets.zero,
         height: 66,
+        // Two equal halves around the centre-docked button, so the "Report"
+        // label sits exactly under it.
         child: Row(
           children: [
-            _NavItem(
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home_rounded,
-              label: 'Home',
-              selected: _index == 0,
-              onTap: () => _goTo(0),
-            ),
-            _NavItem(
-              icon: Icons.description_outlined,
-              selectedIcon: Icons.description_rounded,
-              label: isStaff ? 'Review' : 'Reports',
-              selected: _index == 1,
-              onTap: () => _goTo(1),
+            Expanded(
+              child: Row(children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home_rounded,
+                  label: 'Home',
+                  selected: _index == 0,
+                  onTap: () => _goTo(0),
+                ),
+                _NavItem(
+                  icon: Icons.description_outlined,
+                  selectedIcon: Icons.description_rounded,
+                  label: isStaff ? 'Review' : 'Reports',
+                  selected: _index == 1,
+                  onTap: () => _goTo(1),
+                ),
+              ]),
             ),
             if (!isStaff)
               const SizedBox(
-                width: 72,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: Text('Report',
+                width: 80,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 26), // same space as an icon + gap
+                    Text('Report',
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: AppColors.muted)),
-                  ),
+                  ],
                 ),
               ),
-            _NavItem(
-              icon: Icons.person_outline_rounded,
-              selectedIcon: Icons.person_rounded,
-              label: 'Profile',
-              selected: _index == 2,
-              onTap: () => _goTo(2),
+            Expanded(
+              child: Row(children: [
+                _NavItem(
+                  icon: Icons.person_outline_rounded,
+                  selectedIcon: Icons.person_rounded,
+                  label: 'Profile',
+                  selected: _index == 2,
+                  onTap: () => _goTo(2),
+                ),
+              ]),
             ),
           ],
         ),
