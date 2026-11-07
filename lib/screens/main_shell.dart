@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/incident_provider.dart';
 import '../utils/constants.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'report_form_screen.dart';
 import 'reports_screen.dart';
 
+/// Bottom-navigation container. The tab index is UI-only state, so a local
+/// setState is appropriate here; app data lives in the providers.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -17,57 +20,66 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  void _openForm() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ReportFormScreen()),
-    );
+  void _goTo(int i) => setState(() => _index = i);
+
+  void _openReports(IncidentStatus? status) {
+    context.read<IncidentProvider>().showOwnReports(status: status);
+    _goTo(1);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isStaff = context.select<AuthProvider, bool>((a) => a.user!.isStaff);
+    final isStaff = context.select<AuthProvider, bool>((a) => a.user?.isStaff ?? false);
 
     return Scaffold(
       body: IndexedStack(
         index: _index,
         children: [
-          HomeScreen(onSeeAll: () => setState(() => _index = 1)),
+          HomeScreen(
+            onOpenReports: _openReports,
+            onOpenProfile: () => _goTo(2),
+          ),
           const ReportsScreen(),
           const ProfileScreen(),
         ],
       ),
-      // Staff review reports; only students can file them.
+      // Staff review reports; only students file them.
       floatingActionButton: isStaff
           ? null
           : FloatingActionButton(
-              onPressed: _openForm,
+              onPressed: () => ReportFormScreen.open(context),
+              tooltip: 'Report an issue',
               shape: const CircleBorder(),
+              elevation: 4,
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              child: const Icon(Icons.add, size: 28),
+              child: const Icon(Icons.add, size: 30),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         surfaceTintColor: Colors.white,
+        shadowColor: Colors.black12,
+        elevation: 8,
         shape: isStaff ? null : const CircularNotchedRectangle(),
         notchMargin: 8,
         padding: EdgeInsets.zero,
-        height: 64,
+        height: 66,
         child: Row(
           children: [
             _NavItem(
-              icon: Icons.home_rounded,
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
               label: 'Home',
               selected: _index == 0,
-              onTap: () => setState(() => _index = 0),
+              onTap: () => _goTo(0),
             ),
             _NavItem(
               icon: Icons.description_outlined,
-              label: 'Reports',
+              selectedIcon: Icons.description_rounded,
+              label: isStaff ? 'Review' : 'Reports',
               selected: _index == 1,
-              onTap: () => setState(() => _index = 1),
+              onTap: () => _goTo(1),
             ),
             if (!isStaff)
               const SizedBox(
@@ -75,7 +87,7 @@ class _MainShellState extends State<MainShell> {
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 6),
+                    padding: EdgeInsets.only(bottom: 8),
                     child: Text('Report',
                         style: TextStyle(
                             fontSize: 11,
@@ -86,9 +98,10 @@ class _MainShellState extends State<MainShell> {
               ),
             _NavItem(
               icon: Icons.person_outline_rounded,
+              selectedIcon: Icons.person_rounded,
               label: 'Profile',
               selected: _index == 2,
-              onTap: () => setState(() => _index = 2),
+              onTap: () => _goTo(2),
             ),
           ],
         ),
@@ -99,12 +112,14 @@ class _MainShellState extends State<MainShell> {
 
 class _NavItem extends StatelessWidget {
   final IconData icon;
+  final IconData selectedIcon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
+    required this.selectedIcon,
     required this.label,
     required this.selected,
     required this.onTap,
@@ -114,19 +129,25 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = selected ? AppColors.primary : AppColors.muted;
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: color)),
-          ],
+      child: Semantics(
+        selected: selected,
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(selected ? selectedIcon : icon, color: color, size: 24),
+              const SizedBox(height: 2),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                      color: color)),
+            ],
+          ),
         ),
       ),
     );

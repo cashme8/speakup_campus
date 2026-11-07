@@ -47,7 +47,7 @@ void main() {
   test('logout clears the user', () async {
     final auth = AuthProvider();
     await auth.login(demoStudentEmail, 'password123');
-    auth.logout();
+    await auth.logout();
 
     expect(auth.isLoggedIn, isFalse);
   });

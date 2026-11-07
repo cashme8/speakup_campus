@@ -6,7 +6,7 @@ void main() {
   testWidgets('app starts on the login screen', (tester) async {
     await tester.pumpWidget(const CampusIncidentApp());
 
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Welcome back 👋'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
   });
 
