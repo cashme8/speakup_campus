@@ -1,0 +1,145 @@
+rules_version = '2';
+
+// SpeakUp Campus - Firestore security rules.
+//
+// The app hides staff-only controls, but the UI is not a security boundary:
+// these rules are what actually stop a modified client from, e.g., a student
+// marking their own report "Resolved" or making themselves staff.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function aluEmail() {
+      return request.auth.token.email is string
+        && request.auth.token.email.lower()
+             .matches('^[^@]+@(alustudent|alueducation)[.]com$');
+    }
+
+    // Signed in, ALU email, and the email link has been clicked.
+    function verified() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && aluEmail();
+    }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    // Role comes from users/{uid}, which only an admin can change.
+    function isStaff() {
+      return verified() && exists(userPath())
+        && get(userPath()).data.role == 'staff';
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ---------- users ----------
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isStaff());
+
+      // Created right after sign-up (before verification). The role is
+      // forced to "student": nobody can register as staff.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && aluEmail()
+        && request.resource.data.keys()
+             .hasOnly(['name', 'email', 'department', 'role', 'createdAt'])
+        && request.resource.data.role == 'student'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 3
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.createdAt == request.time;
+
+      // Users may edit their name/department, never their role or email.
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && changedKeys().hasOnly(['name', 'department']);
+
+      allow delete: if false;
+    }
+
+    // ---------- incidents ----------
+    match /incidents/{incidentId} {
+
+      function validNewIncident(d) {
+        return d.keys().hasOnly([
+            'title', 'description', 'category', 'location',
+            'locationDetail', 'status', 'reporterId', 'reporterName',
+            'isAnonymous', 'affectedBy', 'imageUrl', 'imagePath',
+            'createdAt', 'updatedAt', 'history'])
+          && d.title is string
+          && d.title.size() >= 5 && d.title.size() <= 60
+          && d.description is string
+          && d.description.size() >= 15 && d.description.size() <= 500
+          && d.category in ['facilities', 'water', 'electricity',
+                            'safety', 'sanitation', 'furniture']
+          && d.location is string
+          && d.location.size() > 0 && d.location.size() <= 60
+          && (d.locationDetail == null
+              || (d.locationDetail is string && d.locationDetail.size() <= 60))
+          // New reports always start as Submitted and belong to the caller.
+          && d.status == 'submitted'
+          && d.reporterId == request.auth.uid
+          && d.isAnonymous is bool
+          // Anonymous reports must not store the reporter's name.
+          && (d.isAnonymous ? d.reporterName == null : d.reporterName is string)
+          && d.affectedBy is list && d.affectedBy.size() == 0
+          && d.history is list && d.history.size() == 1
+          && d.createdAt == request.time
+          && d.updatedAt == request.time
+          // A photo, if any, must be the caller's own upload for this report
+          // (Firebase Storage path, or Supabase Storage path).
+          && (d.imagePath == null
+              || d.imagePath == 'incident_photos/' + request.auth.uid + '/'
+                                 + incidentId + '.jpg'
+              || d.imagePath == request.auth.uid + '/' + incidentId + '.jpg')
+          && (d.imageUrl == null
+              || (d.imageUrl is string && d.imageUrl.matches('^https://.*')));
+      }
+
+      // Any verified ALU user can browse reports (students check for
+      // duplicates in the Campus view). Names are hidden in the app and
+      // never stored for anonymous reports.
+      allow read: if verified();
+
+      allow create: if verified() && validNewIncident(request.resource.data);
+
+      // Staff: change status and append exactly one history entry.
+      allow update: if isStaff()
+        && changedKeys().hasOnly(['status', 'history', 'updatedAt'])
+        && request.resource.data.status in ['submitted', 'inProgress', 'resolved']
+        && request.resource.data.history.size() == resource.data.history.size() + 1
+        && request.resource.data.updatedAt == request.time;
+
+      // Students: add/remove only *their own* uid in affectedBy ("Me too"),
+      // and only on someone else's report.
+      allow update: if verified()
+        && resource.data.reporterId != request.auth.uid
+        && changedKeys().hasOnly(['affectedBy'])
+        && request.resource.data.affectedBy.size() <= 500
+        && request.resource.data.affectedBy.toSet()
+             .difference(resource.data.affectedBy.toSet())
+             .union(resource.data.affectedBy.toSet()
+                    .difference(request.resource.data.affectedBy.toSet()))
+             == [request.auth.uid].toSet();
+
+      // Reporters can withdraw their own report until staff pick it up.
+      allow delete: if verified()
+        && resource.data.reporterId == request.auth.uid
+        && resource.data.status == 'submitted';
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
