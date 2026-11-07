@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:speakup_campus/data/mock_data.dart';
-import 'package:speakup_campus/main.dart';
+import 'support/fakes.dart';
+import 'support/seed_data.dart';
 
 /// End-to-end UI flows on the mock backend. They catch layout overflows and
 /// navigation crashes that unit tests on the providers would miss.
@@ -10,7 +10,8 @@ Future<void> _login(WidgetTester tester, String email) async {
   tester.view.devicePixelRatio = 2.75;
   addTearDown(tester.view.reset);
 
-  await tester.pumpWidget(const CampusIncidentApp());
+  await tester.pumpWidget(buildTestApp());
+  await tester.pumpAndSettle();
   await tester.enterText(find.byType(TextFormField).at(0), email);
   await tester.enterText(find.byType(TextFormField).at(1), 'password123');
   await tester.tap(find.text('Sign in'));

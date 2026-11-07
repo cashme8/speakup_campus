@@ -1,5 +1,5 @@
-import '../models/incident.dart';
-import '../utils/constants.dart';
+import 'package:speakup_campus/models/incident.dart';
+import 'package:speakup_campus/utils/constants.dart';
 
 const demoStudentEmail = 'amina@alustudent.com';
 const demoStaffEmail = 'staff@alueducation.com';
@@ -23,8 +23,11 @@ List<Incident> seedIncidents() {
       createdAt: ago(h: 2),
       history: [
         StatusEntry(IncidentStatus.submitted, ago(h: 2)),
-        StatusEntry(IncidentStatus.inProgress, ago(m: 30)),
+        StatusEntry(IncidentStatus.inProgress, ago(m: 30),
+            note: 'Plumber is on the way to check the main valve.',
+            byName: 'Facilities Team'),
       ],
+      affectedBy: ['james@alustudent.com', 'grace@alustudent.com'],
     ),
     Incident(
       id: 'i2',
@@ -32,7 +35,8 @@ List<Incident> seedIncidents() {
       description:
           'The projector in Room 204 does not turn on. Lectures are being delayed.',
       category: IncidentCategory.facilities,
-      location: 'Block B, Room 204',
+      location: 'Block B',
+      locationDetail: 'Room 204',
       status: IncidentStatus.inProgress,
       reporterId: demoStudentEmail,
       reporterName: 'Amina Hassan',
@@ -56,7 +60,9 @@ List<Incident> seedIncidents() {
       history: [
         StatusEntry(IncidentStatus.submitted, ago(d: 3)),
         StatusEntry(IncidentStatus.inProgress, ago(d: 2, h: 5)),
-        StatusEntry(IncidentStatus.resolved, ago(d: 2)),
+        StatusEntry(IncidentStatus.resolved, ago(d: 2),
+            note: 'Bins emptied and collection moved to twice a day.',
+            byName: 'Facilities Team'),
       ],
     ),
     Incident(
@@ -69,6 +75,7 @@ List<Incident> seedIncidents() {
       status: IncidentStatus.submitted,
       reporterId: 'james@alustudent.com',
       reporterName: 'James Okoro',
+      affectedBy: [demoStudentEmail],
       createdAt: ago(h: 5),
       history: [StatusEntry(IncidentStatus.submitted, ago(h: 5))],
     ),
@@ -78,10 +85,12 @@ List<Incident> seedIncidents() {
       description:
           'The railing on the staircase at Block A is loose and could cause a fall.',
       category: IncidentCategory.safety,
-      location: 'Block A, Lecture Hall',
+      location: 'Block A',
+      locationDetail: 'Main staircase',
       status: IncidentStatus.inProgress,
       reporterId: 'grace@alustudent.com',
       reporterName: 'Grace Uwase',
+      isAnonymous: true,
       createdAt: ago(d: 2),
       history: [
         StatusEntry(IncidentStatus.submitted, ago(d: 2)),
@@ -93,7 +102,8 @@ List<Incident> seedIncidents() {
       title: 'Damaged chairs in the lab',
       description: 'Four chairs in the computer lab have broken backs.',
       category: IncidentCategory.furniture,
-      location: 'Block C, Computer Lab',
+      location: 'Block C',
+      locationDetail: 'Computer Lab',
       status: IncidentStatus.resolved,
       reporterId: 'james@alustudent.com',
       reporterName: 'James Okoro',
