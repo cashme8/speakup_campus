@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>SpeakUp Campus uses the camera to attach a photo of the issue you are reporting.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SpeakUp Campus lets you choose a photo of the issue from your library.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
